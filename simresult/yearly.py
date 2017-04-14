@@ -19,26 +19,21 @@ df = pd.concat([df_sta, df_oes])
 df.index = ["Standalone", "DCOES"]
 df["SELF"] = df["CONSUMPTION"] * df["SELF_SUFFICIENT"] / 100
 df["BUY"] = df["CONSUMPTION"] - df["SELF"]
-df.iloc[:,1:] /= 1000
-
-"""
-con = np.array([df.loc["Standalone","CONSUMPTION"], 0, 0])
-buy = np.array([0, df.loc["Standalone","BUY"], df.loc["DCOES","BUY"]])
-self = np.array([0, df.loc["Standalone","SELF"], df.loc["DCOES","SELF"]])
-sur = np.array([0, df.loc["Standalone","SURPLUS"], df.loc["DCOES","SURPLUS"]])
-"""
+df.iloc[:,1:3] /= 1000
+df.iloc[:,4:10] /= 1000
+df.iloc[:,11:] /= 1000
 
 con = df.loc["Standalone","CONSUMPTION"]
 buy = pd.DataFrame([df.loc["Standalone","BUY"], df.loc["DCOES","BUY"]])
 self =pd.DataFrame([df.loc["Standalone","SELF"], df.loc["DCOES","SELF"]])
 sur = pd.DataFrame([df.loc["Standalone","SURPLUS"], df.loc["DCOES","SURPLUS"]])
+exc = pd.DataFrame([df.loc["Standalone","EXCHANGE_CHARGE"], df.loc["DCOES","EXCHANGE_CHARGE"]])
 
 labels = ["Consumption", "Buy", "Self", "Surplus"]
-#df_plt = pd.concat([con, buy, self, sur], axis=1)
 df_plt = pd.concat([buy, self, sur], axis=1)
 
 fig, ax = plt.subplots()
-xvals = np.arange(len(df_plt))
+xvals = np.arange(len(df_plt)) ## delete -1 to include exchange
 xvals2 = np.arange(len(df_plt)+1)
 width = 0.5
 colors = ["gray", "orange", "blue", "brown"]
@@ -65,27 +60,18 @@ for i in range(df_plt.shape[1]):
 
 ### Draw diagram
 
-"""
-fig = plt.figure()
-
-plt.bar(xvals, con, width, color="gray")
-plt.text(xvals, con, con)
-plt.bar(xvals, buy, width, color="orange")
-plt.bar(xvals, self, bottom=buy, width = 0.5, color="blue")
-plt.bar(xvals, sur, bottom=buy+self, width = 0.5, color="brown")
-"""
 plt.xticks(xvals2, ["Consumption", "Standalone", "DCOES"])
 commaform = mpl.ticker.FuncFormatter(lambda x,p: format(int(x), ','))
 ax.get_yaxis().set_major_formatter(commaform)
-plt.ylabel("[kWh]")
-plt.title("Yearly data")
-plt.legend(["Consumption", "Buy", "Self", "Surplus"])
+plt.title("Yearly data [kWh]")
+handles, labels = ax.get_legend_handles_labels()
+plt.legend(handles[::-1], labels[::-1], bbox_to_anchor=(1, 1.06), fontsize=9)
+fig.subplots_adjust(left=0.15, bottom=0.1, right=0.9, top=0.9, wspace=0.15, hspace=0.15)
+plt.tick_params(top='off', bottom='off', left='off', right='off', labelleft='off', labelbottom='on')
+for spine in plt.gca().spines.values():
+    spine.set_visible(False)
 
-
-plt.grid(False)
 
 plt.show()
 
-
-#print(xvals)
 
